@@ -1,0 +1,334 @@
+title: HVAC Monitoring
+path: hvac-monitoring
+icon: mdi:air-conditioner
+badges: []
+cards:
+  # Top Row - Current Status Overview
+  - type: horizontal-stack
+    cards:
+      - type: gauge
+        entity: sensor.delta_tango_192b39_hvac_delta_t_degf
+        name: Delta T (°F)
+        min: 0
+        max: 50
+        severity:
+          green: 14
+          yellow: 10
+          red: 0
+        needle: true
+        
+      - type: gauge
+        entity: sensor.delta_tango_192b39_hvac_static_pressure
+        name: Static Pressure (Pa)
+        min: 0
+        max: 300
+        severity:
+          green: 0
+          yellow: 150
+          red: 200
+        needle: true
+        
+      - type: glance
+        entities:
+          - entity: sensor.delta_tango_192b39_hvac_return_air_temperature
+            name: Return Air
+          - entity: sensor.delta_tango_192b39_hvac_supply_air_temperature  
+            name: Supply Air
+        title: Current Temperatures
+        show_state: true
+        
+  # Second Row - Detailed Current Readings
+  - type: entities
+    title: Current Readings
+    entities:
+      - entity: sensor.delta_tango_192b39_hvac_return_air_temperature
+        name: Return Air Temperature
+        icon: mdi:thermometer-chevron-up
+      - entity: sensor.delta_tango_192b39_hvac_supply_air_temperature
+        name: Supply Air Temperature  
+        icon: mdi:thermometer-chevron-down
+      - entity: sensor.delta_tango_192b39_hvac_delta_t_degc
+        name: Delta T (°C)
+        icon: mdi:delta
+      - entity: sensor.delta_tango_192b39_hvac_delta_t_degf
+        name: Delta T (°F)
+        icon: mdi:delta
+      - entity: sensor.delta_tango_192b39_hvac_static_pressure
+        name: Static Pressure
+        icon: mdi:gauge
+        
+  # Third Row - Historical Trends
+  - type: history-graph
+    title: Temperature Trends (24 Hours)
+    entities:
+      - entity: sensor.delta_tango_192b39_hvac_return_air_temperature
+        name: Return Air
+      - entity: sensor.delta_tango_192b39_hvac_supply_air_temperature
+        name: Supply Air
+    hours_to_show: 24
+    refresh_interval: 60
+    
+  - type: history-graph
+    title: Delta T & Pressure Trends (24 Hours)
+    entities:
+      - entity: sensor.delta_tango_192b39_hvac_delta_t_degf
+        name: Delta T (°F)
+      - entity: sensor.delta_tango_192b39_hvac_static_pressure
+        name: Static Pressure (Pa)
+    hours_to_show: 24
+    refresh_interval: 60
+    
+  # Fourth Row - Statistics and Analysis
+  - type: horizontal-stack
+    cards:
+      - type: statistics-graph
+        title: Delta T Statistics (7 Days)
+        entities:
+          - sensor.delta_tango_192b39_hvac_delta_t_degf
+        chart_type: line
+        period: hour
+        stat_types:
+          - mean
+          - min
+          - max
+        days_to_show: 7
+        
+      - type: statistics-graph
+        title: Pressure Statistics (7 Days)
+        entities:
+          - sensor.delta_tango_192b39_hvac_static_pressure
+        chart_type: line
+        period: hour
+        stat_types:
+          - mean
+          - min
+          - max
+        days_to_show: 7
+
+  # Fifth Row - System Health Analysis
+  - type: horizontal-stack
+    cards:
+      - type: custom:mushroom-template-card
+        primary: "HVAC Efficiency"
+        secondary: >-
+          {% set delta_t = states('sensor.delta_tango_192b39_hvac_delta_t_degf') | float(0) %}
+          {% if delta_t >= 14 %}
+            Excellent ({{ delta_t }}°F)
+          {% elif delta_t >= 10 %}
+            Good ({{ delta_t }}°F)  
+          {% elif delta_t >= 7 %}
+            Fair ({{ delta_t }}°F)
+          {% else %}
+            Poor ({{ delta_t }}°F)
+          {% endif %}
+        icon: >-
+          {% set delta_t = states('sensor.delta_tango_192b39_hvac_delta_t_degf') | float(0) %}
+          {% if delta_t >= 14 %}
+            mdi:check-circle
+          {% elif delta_t >= 10 %}
+            mdi:alert-circle
+          {% else %}
+            mdi:close-circle
+          {% endif %}
+        icon_color: >-
+          {% set delta_t = states('sensor.delta_tango_192b39_hvac_delta_t_degf') | float(0) %}
+          {% if delta_t >= 14 %}
+            green
+          {% elif delta_t >= 10 %}
+            orange
+          {% else %}
+            red
+          {% endif %}
+        tap_action:
+          action: more-info
+          entity: sensor.delta_tango_192b39_hvac_delta_t_degf
+          
+      - type: custom:mushroom-template-card
+        primary: "System Pressure"
+        secondary: >-
+          {% set pressure = states('sensor.delta_tango_192b39_hvac_static_pressure') | float(0) %}
+          {% if pressure <= 125 %}
+            Normal ({{ pressure }} Pa)
+          {% elif pressure <= 200 %}
+            Elevated ({{ pressure }} Pa)
+          {% else %}
+            High ({{ pressure }} Pa)
+          {% endif %}
+        icon: >-
+          {% set pressure = states('sensor.delta_tango_192b39_hvac_static_pressure') | float(0) %}
+          {% if pressure <= 125 %}
+            mdi:gauge
+          {% elif pressure <= 200 %}
+            mdi:gauge-empty
+          {% else %}
+            mdi:alert-octagon
+          {% endif %}
+        icon_color: >-
+          {% set pressure = states('sensor.delta_tango_192b39_hvac_static_pressure') | float(0) %}
+          {% if pressure <= 125 %}
+            green
+          {% elif pressure <= 200 %}
+            orange
+          {% else %}
+            red
+          {% endif %}
+        tap_action:
+          action: more-info
+          entity: sensor.delta_tango_192b39_hvac_static_pressure
+
+  # Sixth Row - Diagnostic Cards
+  - type: horizontal-stack
+    cards:
+      - type: custom:mushroom-template-card
+        primary: "Filter Status"
+        secondary: >-
+          {% set delta_t = states('sensor.delta_tango_192b39_hvac_delta_t_degf') | float(0) %}
+          {% set pressure = states('sensor.delta_tango_192b39_hvac_static_pressure') | float(0) %}
+          {% if delta_t < 7 and pressure > 150 %}
+            Replace Filter!
+          {% elif delta_t < 10 and pressure > 125 %}
+            Check Filter
+          {% elif pressure > 150 %}
+            Check Airflow
+          {% else %}
+            Filter OK
+          {% endif %}
+        icon: >-
+          {% set delta_t = states('sensor.delta_tango_192b39_hvac_delta_t_degf') | float(0) %}
+          {% set pressure = states('sensor.delta_tango_192b39_hvac_static_pressure') | float(0) %}
+          {% if delta_t < 7 and pressure > 150 %}
+            mdi:air-filter
+          {% elif delta_t < 10 and pressure > 125 %}
+            mdi:air-filter
+          {% elif pressure > 150 %}
+            mdi:alert-circle
+          {% else %}
+            mdi:check
+          {% endif %}
+        icon_color: >-
+          {% set delta_t = states('sensor.delta_tango_192b39_hvac_delta_t_degf') | float(0) %}
+          {% set pressure = states('sensor.delta_tango_192b39_hvac_static_pressure') | float(0) %}
+          {% if delta_t < 7 and pressure > 150 %}
+            red
+          {% elif delta_t < 10 and pressure > 125 %}
+            orange
+          {% elif pressure > 150 %}
+            orange
+          {% else %}
+            green
+          {% endif %}
+          
+      - type: custom:mushroom-template-card
+        primary: "Airflow Status"
+        secondary: >-
+          {% set delta_t = states('sensor.delta_tango_192b39_hvac_delta_t_degf') | float(0) %}
+          {% set pressure = states('sensor.delta_tango_192b39_hvac_static_pressure') | float(0) %}
+          {% if pressure > 200 %}
+            Restricted
+          {% elif pressure > 150 and delta_t > 10 %}
+            Check Vents
+          {% elif pressure <= 100 %}
+            Good Flow
+          {% else %}
+            Normal
+          {% endif %}
+        icon: >-
+          {% set pressure = states('sensor.delta_tango_192b39_hvac_static_pressure') | float(0) %}
+          {% if pressure > 200 %}
+            mdi:wind-power-outline
+          {% elif pressure > 150 %}
+            mdi:weather-windy
+          {% else %}
+            mdi:weather-windy-variant
+          {% endif %}
+        icon_color: >-
+          {% set pressure = states('sensor.delta_tango_192b39_hvac_static_pressure') | float(0) %}
+          {% if pressure > 200 %}
+            red
+          {% elif pressure > 150 %}
+            orange
+          {% else %}
+            green
+          {% endif %}
+
+  # Seventh Row - Detailed Pressure Analysis
+  - type: entities
+    title: Pressure Analysis
+    entities:
+      - type: custom:fold-entity-row
+        head:
+          type: custom:template-entity-row
+          entity: sensor.delta_tango_192b39_hvac_static_pressure
+          name: "Static Pressure Details"
+          icon: mdi:information-outline
+        entities:
+          - entity: sensor.delta_tango_192b39_hvac_static_pressure
+            name: "Current Pressure"
+            icon: mdi:gauge
+          - type: custom:template-entity-row
+            entity: sensor.delta_tango_192b39_hvac_static_pressure
+            name: "Pressure (in H2O)"
+            state: >-
+              {% set pa = states('sensor.delta_tango_192b39_hvac_static_pressure') | float(0) %}
+              {{ (pa * 0.00401463) | round(3) }}"
+            icon: mdi:water-outline
+          - type: custom:template-entity-row
+            entity: sensor.delta_tango_192b39_hvac_static_pressure
+            name: "Status"
+            state: >-
+              {% set pressure = states('sensor.delta_tango_192b39_hvac_static_pressure') | float(0) %}
+              {% if pressure <= 50 %}
+                Very Low
+              {% elif pressure <= 125 %}
+                Normal (50-125 Pa)
+              {% elif pressure <= 200 %}
+                Elevated (125-200 Pa)
+              {% elif pressure <= 300 %}
+                High (200-300 Pa)
+              {% else %}
+                Critical (>300 Pa)
+              {% endif %}
+            icon: mdi:information
+
+  # Eighth Row - Mini Graph Cards for Quick Overview
+  - type: horizontal-stack
+    cards:
+      - type: custom:mini-graph-card
+        name: Return Air (24h)
+        entities:
+          - sensor.delta_tango_192b39_hvac_return_air_temperature
+        hours_to_show: 24
+        points_per_hour: 4
+        line_color: red
+        show:
+          labels: false
+          
+      - type: custom:mini-graph-card
+        name: Supply Air (24h)  
+        entities:
+          - sensor.delta_tango_192b39_hvac_supply_air_temperature
+        hours_to_show: 24
+        points_per_hour: 4
+        line_color: blue
+        show:
+          labels: false
+          
+      - type: custom:mini-graph-card
+        name: Delta T (24h)
+        entities:
+          - sensor.delta_tango_192b39_hvac_delta_t_degf
+        hours_to_show: 24
+        points_per_hour: 4
+        line_color: green
+        show:
+          labels: false
+          
+      - type: custom:mini-graph-card
+        name: Pressure (24h)
+        entities:
+          - sensor.delta_tango_192b39_hvac_static_pressure
+        hours_to_show: 24
+        points_per_hour: 4
+        line_color: purple
+        show:
+          labels: false
