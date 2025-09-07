@@ -1,1 +1,335 @@
-automations
+# HVAC Delta-T Monitor Automations
+# Add these to your Home Assistant automations.yaml file
+
+# =============================================================================
+# CRITICAL ALERTS - Immediate Action Required
+# =============================================================================
+
+- alias: "HVAC: Critical Filter Replacement Required"
+  description: "Alert when filter needs immediate replacement (low delta-T + high pressure)"
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.delta_tango_192b39_hvac_delta_t_degf
+      below: 7
+      for:
+        minutes: 10
+    - platform: numeric_state
+      entity_id: sensor.delta_tango_192b39_hvac_static_pressure
+      above: 200
+      for:
+        minutes: 10
+  condition:
+    - condition: and
+      conditions:
+        - condition: numeric_state
+          entity_id: sensor.delta_tango_192b39_hvac_delta_t_degf
+          below: 7
+        - condition: numeric_state
+          entity_id: sensor.delta_tango_192b39_hvac_static_pressure
+          above: 200
+  action:
+    - service: notify.mobile_app_your_phone  # Replace with your device
+      data:
+        title: "🚨 HVAC CRITICAL: Replace Filter NOW"
+        message: >
+          Delta-T: {{ states('sensor.delta_tango_192b39_hvac_delta_t_degf') }}°F
+          Pressure: {{ states('sensor.delta_tango_192b39_hvac_static_pressure') }}Pa
+          System efficiency is critically low!
+        data:
+          tag: "hvac_critical"
+          group: "HVAC Alerts"
+          color: "red"
+          importance: "high"
+    - service: persistent_notification.create
+      data:
+        title: "HVAC Critical Alert"
+        message: "Filter replacement required immediately. Delta-T: {{ states('sensor.delta_tango_192b39_hvac_delta_t_degf') }}°F, Pressure: {{ states('sensor.delta_tango_192b39_hvac_static_pressure') }}Pa"
+        notification_id: "hvac_critical_filter"
+  mode: single
+
+- alias: "HVAC: Extreme High Pressure Alert"
+  description: "Alert when static pressure is dangerously high"
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.delta_tango_192b39_hvac_static_pressure
+      above: 300
+      for:
+        minutes: 5
+  action:
+    - service: notify.mobile_app_your_phone  # Replace with your device
+      data:
+        title: "🚨 HVAC EMERGENCY: Extreme High Pressure"
+        message: >
+          Static Pressure: {{ states('sensor.delta_tango_192b39_hvac_static_pressure') }}Pa
+          Check for blocked vents or ducts immediately!
+        data:
+          tag: "hvac_emergency"
+          group: "HVAC Alerts"
+          color: "red"
+          importance: "high"
+    - service: light.turn_on  # Optional: Flash lights for immediate attention
+      target:
+        entity_id: light.living_room_lights  # Replace with your lights
+      data:
+        flash: "long"
+        color_name: "red"
+  mode: single
+
+# =============================================================================
+# MAINTENANCE ALERTS - Preventive Actions
+# =============================================================================
+
+- alias: "HVAC: Filter Check Reminder"
+  description: "Reminder to check filter when efficiency starts declining"
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.delta_tango_192b39_hvac_delta_t_degf
+      below: 10
+      for:
+        hours: 2
+  condition:
+    - condition: and
+      conditions:
+        - condition: numeric_state
+          entity_id: sensor.delta_tango_192b39_hvac_delta_t_degf
+          below: 10
+          above: 7
+        - condition: numeric_state
+          entity_id: sensor.delta_tango_192b39_hvac_static_pressure
+          above: 125
+  action:
+    - service: notify.mobile_app_your_phone  # Replace with your device
+      data:
+        title: "🔧 HVAC Maintenance: Check Filter"
+        message: >
+          Delta-T dropping: {{ states('sensor.delta_tango_192b39_hvac_delta_t_degf') }}°F
+          Pressure rising: {{ states('sensor.delta_tango_192b39_hvac_static_pressure') }}Pa
+          Consider checking/replacing filter soon.
+        data:
+          tag: "hvac_maintenance"
+          group: "HVAC Alerts"
+  mode: single
+
+- alias: "HVAC: High Pressure - Check Vents"
+  description: "Alert when high pressure suggests closed vents"
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.delta_tango_192b39_hvac_static_pressure
+      above: 200
+      for:
+        minutes: 15
+  condition:
+    - condition: numeric_state
+      entity_id: sensor.delta_tango_192b39_hvac_delta_t_degf
+      above: 10  # Good delta-T but high pressure = likely closed vents
+  action:
+    - service: notify.mobile_app_your_phone  # Replace with your device
+      data:
+        title: "🌬️ HVAC: Check Vent Settings"
+        message: >
+          High pressure ({{ states('sensor.delta_tango_192b39_hvac_static_pressure') }}Pa) with good delta-T.
+          Check if too many vents are closed.
+        data:
+          tag: "hvac_vents"
+          group: "HVAC Alerts"
+  mode: single
+
+# =============================================================================
+# PERFORMANCE MONITORING
+# =============================================================================
+
+- alias: "HVAC: Daily Performance Report"
+  description: "Daily summary of HVAC performance"
+  trigger:
+    - platform: time
+      at: "08:00:00"  # Adjust time as needed
+  condition:
+    - condition: time
+      weekday:
+        - mon
+        - tue
+        - wed
+        - thu
+        - fri
+        - sat
+        - sun
+  action:
+    - service: notify.mobile_app_your_phone  # Replace with your device
+      data:
+        title: "📊 Daily HVAC Report"
+        message: >
+          Yesterday's Performance:
+          Delta-T: {{ states('sensor.delta_tango_192b39_hvac_delta_t_degf') }}°F
+          Pressure: {{ states('sensor.delta_tango_192b39_hvac_static_pressure') }}Pa
+          Status: {{ states('text_sensor.delta_tango_192b39_hvac_system_status') }}
+        data:
+          tag: "hvac_daily_report"
+          group: "HVAC Reports"
+  mode: single
+
+- alias: "HVAC: Weekly Filter Reminder"
+  description: "Weekly reminder to check filter based on usage"
+  trigger:
+    - platform: time
+      at: "19:00:00"
+  condition:
+    - condition: time
+      weekday:
+        - sun  # Every Sunday evening
+  action:
+    - service: notify.mobile_app_your_phone  # Replace with your device
+      data:
+        title: "🗓️ Weekly HVAC Check"
+        message: >
+          Weekly filter check reminder.
+          Current Delta-T: {{ states('sensor.delta_tango_192b39_hvac_delta_t_degf') }}°F
+          Current Pressure: {{ states('sensor.delta_tango_192b39_hvac_static_pressure') }}Pa
+          {% if states('sensor.delta_tango_192b39_hvac_delta_t_degf')|float < 10 %}
+          ⚠️ Consider replacing filter this week.
+          {% else %}
+          ✅ System running well.
+          {% endif %}
+        data:
+          tag: "hvac_weekly_reminder"
+          group: "HVAC Reports"
+  mode: single
+
+# =============================================================================
+# SYSTEM RECOVERY NOTIFICATIONS
+# =============================================================================
+
+- alias: "HVAC: System Performance Restored"
+  description: "Notify when system performance improves after maintenance"
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.delta_tango_192b39_hvac_delta_t_degf
+      above: 14
+      for:
+        minutes: 30
+  condition:
+    - condition: and
+      conditions:
+        - condition: numeric_state
+          entity_id: sensor.delta_tango_192b39_hvac_static_pressure
+          below: 125
+        - condition: state
+          entity_id: binary_sensor.delta_tango_192b39_hvac_filter_alert
+          state: "off"
+  action:
+    - service: notify.mobile_app_your_phone  # Replace with your device
+      data:
+        title: "✅ HVAC: Performance Restored"
+        message: >
+          System is now running optimally!
+          Delta-T: {{ states('sensor.delta_tango_192b39_hvac_delta_t_degf') }}°F
+          Pressure: {{ states('sensor.delta_tango_192b39_hvac_static_pressure') }}Pa
+        data:
+          tag: "hvac_restored"
+          group: "HVAC Alerts"
+          color: "green"
+    - service: persistent_notification.dismiss
+      data:
+        notification_id: "hvac_critical_filter"
+  mode: single
+
+# =============================================================================
+# SEASONAL ADJUSTMENTS
+# =============================================================================
+
+- alias: "HVAC: Seasonal Efficiency Check"
+  description: "Remind to check system efficiency at season changes"
+  trigger:
+    - platform: time
+      at: "10:00:00"
+  condition:
+    - condition: template
+      value_template: >
+        {% set month = now().month %}
+        {% set day = now().day %}
+        {{ (month == 3 and day == 15) or (month == 6 and day == 15) or 
+           (month == 9 and day == 15) or (month == 12 and day == 15) }}
+  action:
+    - service: notify.mobile_app_your_phone  # Replace with your device
+      data:
+        title: "🍂 Seasonal HVAC Check"
+        message: >
+          Time for seasonal HVAC maintenance check!
+          Current system performance:
+          Delta-T: {{ states('sensor.delta_tango_192b39_hvac_delta_t_degf') }}°F
+          Pressure: {{ states('sensor.delta_tango_192b39_hvac_static_pressure') }}Pa
+          Consider scheduling professional maintenance.
+        data:
+          tag: "hvac_seasonal"
+          group: "HVAC Reports"
+  mode: single
+
+# =============================================================================
+# DATA LOGGING AND HISTORY
+# =============================================================================
+
+- alias: "HVAC: Log Performance Data"
+  description: "Log daily min/max/avg performance for trend analysis"
+  trigger:
+    - platform: time
+      at: "23:59:00"
+  action:
+    - service: logbook.log
+      data:
+        name: "HVAC Daily Summary"
+        message: >
+          Delta-T: {{ states('sensor.delta_tango_192b39_hvac_delta_t_degf') }}°F
+          Pressure: {{ states('sensor.delta_tango_192b39_hvac_static_pressure') }}Pa
+          Status: {{ states('text_sensor.delta_tango_192b39_hvac_system_status') }}
+        entity_id: sensor.delta_tango_192b39_hvac_delta_t_degf
+  mode: single
+
+# =============================================================================
+# SENSOR HEALTH MONITORING
+# =============================================================================
+
+- alias: "HVAC: Sensor Offline Alert"
+  description: "Alert when sensors go offline"
+  trigger:
+    - platform: state
+      entity_id: 
+        - sensor.delta_tango_192b39_hvac_return_air_temperature
+        - sensor.delta_tango_192b39_hvac_supply_air_temperature
+        - sensor.delta_tango_192b39_hvac_static_pressure
+      to: "unavailable"
+      for:
+        minutes: 5
+  action:
+    - service: notify.mobile_app_your_phone  # Replace with your device
+      data:
+        title: "⚠️ HVAC Sensor Offline"
+        message: >
+          Sensor {{ trigger.to_state.attributes.friendly_name }} has gone offline.
+          Check ESP8266 connection and power.
+        data:
+          tag: "hvac_sensor_offline"
+          group: "HVAC System"
+  mode: parallel
+
+# =============================================================================
+# CONFIGURATION NOTES
+# =============================================================================
+
+# IMPORTANT: Replace the following with your actual entity IDs:
+# - notify.mobile_app_your_phone (your mobile device notification service)
+# - light.living_room_lights (lights for emergency alerts, optional)
+#
+# NOTIFICATION SETUP:
+# 1. Install Home Assistant mobile app
+# 2. Enable notifications in the app
+# 3. Replace "mobile_app_your_phone" with your actual device name
+#
+# CUSTOMIZATION:
+# - Adjust time triggers to match your schedule
+# - Modify threshold values based on your system's normal operating range
+# - Add/remove notification methods (email, Slack, etc.)
+# - Customize message content and formatting
+#
+# TESTING:
+# - Test each automation individually
+# - Verify notification delivery
+# - Adjust timing and thresholds based on your system's behavior
