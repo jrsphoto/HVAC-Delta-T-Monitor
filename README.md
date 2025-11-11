@@ -2,7 +2,7 @@
 
 A comprehensive HVAC monitoring solution using ESP8266, temperature sensors, and static pressure monitoring to track system efficiency and health.
 
-## 📊 Project Overview
+## Project Overview
 
 This project monitors key HVAC metrics to help optimize system performance and detect maintenance issues:
 
@@ -11,7 +11,7 @@ This project monitors key HVAC metrics to help optimize system performance and d
 - **Real-time Dashboard**: Home Assistant integration with comprehensive visualizations
 - **Automated Alerts**: Notifications for efficiency issues and maintenance needs
 
-## 🔧 Hardware Components
+##  Hardware Components
 
 ### Required Components
 - **ESP8266 Development Board** (NodeMCU, Wemos D1 Mini, etc.)
@@ -26,7 +26,7 @@ This project monitors key HVAC metrics to help optimize system performance and d
 - **2x 4.7kΩ Resistors** - I2C pull-ups (usually built into ESP boards)
 - **Reset button** - For manual reset during programming
 
-## 📋 Pin Configuration
+##  Pin Configuration
 
 | Component | Pin | ESP8266 Pin | Function |
 |-----------|-----|-------------|----------|
@@ -38,7 +38,7 @@ This project monitors key HVAC metrics to help optimize system performance and d
 | DS18B20 (both) | GND | GND | Ground |
 | DS18B20 (both) | DATA | D6 (GPIO12) | OneWire Bus |
 
-## 🏗️ Installation
+##  Installation
 
 ### 1. Hardware Assembly
 1. Follow the [schematic diagram](docs/schematic.md) for wiring
@@ -61,7 +61,7 @@ This project monitors key HVAC metrics to help optimize system performance and d
    - `mushroom-template-card`
    - `mini-graph-card`
 
-## 📊 Dashboard Features
+##  Dashboard Features
 
 ### Current Status
 - Real-time temperature readings
@@ -80,7 +80,7 @@ This project monitors key HVAC metrics to help optimize system performance and d
 - Filter maintenance indicators
 - Airflow restriction warnings
 
-## 🚨 Automation & Alerts
+##  Automation & Alerts
 
 The system includes automated monitoring for:
 
@@ -98,7 +98,7 @@ The system includes automated monitoring for:
 - **High static pressure** + **normal Delta-T** = Closed vents or duct issues
 - **Low Delta-T** + **high static pressure** = Dirty filter
 
-## 📁 File Structure
+##  File Structure
 
 ```
 hvac-delta-t-monitor/
@@ -120,7 +120,7 @@ hvac-delta-t-monitor/
     └── installation-photos/
 ```
 
-## 🔧 Configuration
+##  Configuration
 
 ### ESPHome Sensors
 The system creates the following entities:
@@ -135,7 +135,7 @@ The system creates the following entities:
 - Modify dashboard thresholds in `home-assistant/dashboard.yaml`
 - Adjust automation triggers in `home-assistant/automations.yaml`
 
-## 📈 Understanding the Data
+##  Understanding the Data
 
 ### Delta-T Interpretation
 - **Cooling Mode**: Higher Delta-T = better efficiency (14-20°F optimal)
@@ -147,7 +147,7 @@ The system creates the following entities:
 - **Rising pressure**: Filter loading or airflow restrictions
 - **Very high pressure**: Check for closed vents or blocked ducts
 
-## 🛠️ Troubleshooting
+##  Troubleshooting
 
 ### Common Issues
 1. **Sensors not detected**: Check I2C/OneWire connections and pull-up resistors
@@ -160,7 +160,7 @@ The system creates the following entities:
 - Use ESPHome logs to verify sensor detection
 - Check Home Assistant entity states in Developer Tools
 
-## 🤝 Contributing
+##  Contributing
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
@@ -168,18 +168,18 @@ The system creates the following entities:
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 📝 License
+##  License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+##  Acknowledgments
 
 - [ESPHome](https://esphome.io/) for the excellent IoT framework
 - [Home Assistant](https://www.home-assistant.io/) for home automation platform
 - [Sensirion](https://www.sensirion.com/) for quality sensor documentation
 - HVAC community for efficiency guidelines and best practices
 
-## 📧 Support
+## Support
 
 - **Issues**: [GitHub Issues](https://github.com/yourusername/hvac-delta-t-monitor/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/yourusername/hvac-delta-t-monitor/discussions)
@@ -187,4 +187,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**⚠️ Disclaimer**: This project is for educational and monitoring purposes. Always consult HVAC professionals for system modifications or if you're unsure about any readings or maintenance requirements.
+** Disclaimer**: This project is for educational and monitoring purposes. Always consult HVAC professionals for system modifications or if you're unsure about any readings or maintenance requirements.
